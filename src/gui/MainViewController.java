@@ -2,6 +2,7 @@ package gui;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import application.Main;
 import gui.util.Alerts;
@@ -34,17 +35,20 @@ public class MainViewController implements Initializable {
 	
 	@FXML
 	private void onMenuItemDepartmentAction() {
-		loadView2("/gui/DepartmentList.fxml");	
+		loadView("/gui/DepartmentList.fxml", (DepartmentListController controller) -> {
+			controller.setDepatmentService(new DepartmentService());
+			controller.updateTableView();
+		});	
 		
 		}
 	
 	@FXML
 	private void onMenuItemAboutAction() {
-		loadView("/gui/aboutView.fxml");
+		loadView("/gui/aboutView.fxml", x -> {});
 	
 	}
 	
-	private synchronized void loadView(String absoluteName) {
+	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
 			VBox newVbox = loader.load() ;
@@ -57,37 +61,13 @@ public class MainViewController implements Initializable {
 			mainVbox.getChildren().add(mainMenu);
 			mainVbox.getChildren().addAll(newVbox.getChildren());
 			
-			
-			
-		} catch (Exception e) {
-			Alerts.showAlert("IOException", "Error Loading View", e.getMessage(), AlertType.ERROR);
-		}
-	}
-
-	
-	private synchronized void loadView2(String absoluteName) {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
-			VBox newVbox = loader.load() ;
-			
-			Scene mainScene = Main.getMainScene();
-			VBox mainVbox = (VBox) ((ScrollPane) mainScene.getRoot()).getContent();
-			
-			Node mainMenu = mainVbox.getChildren().get(0);
-			mainVbox.getChildren().clear();
-			mainVbox.getChildren().add(mainMenu);
-			mainVbox.getChildren().addAll(newVbox.getChildren());
-			
-			DepartmentListController controller = loader.getController();
-			controller.setDepatmentService(new DepartmentService());
-			controller.updateTableView();
-			
+			T controller = loader.getController();
+			initializingAction.accept(controller);
 			
 		} catch (Exception e) {
 			Alerts.showAlert("IOException", "Error Loading View", e.getMessage(), AlertType.ERROR);
 		}
 	}
-
 	
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
