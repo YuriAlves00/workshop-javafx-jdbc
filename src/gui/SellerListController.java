@@ -48,13 +48,12 @@ public class SellerListController implements Initializable, DataChangeListener {
 
 	@FXML
 	private TableColumn<Seller, String> tableColumnEmail;
-
+	
 	@FXML
 	private TableColumn<Seller, Date> tableColumnBirthDate;
-
+	
 	@FXML
 	private TableColumn<Seller, Double> tableColumnBaseSalary;
-
 	
 	@FXML
 	private TableColumn<Seller, Seller> tableColumnEDIT;
@@ -65,7 +64,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 	@FXML
 	private Button btNew;
 
-	private ObservableList<Seller> obslist;
+	private ObservableList<Seller> obsList;
 
 	@FXML
 	public void onBtNewAction(ActionEvent event) {
@@ -81,7 +80,6 @@ public class SellerListController implements Initializable, DataChangeListener {
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 		initializeNodes();
-
 	}
 
 	private void initializeNodes() {
@@ -92,19 +90,20 @@ public class SellerListController implements Initializable, DataChangeListener {
 		Utils.formatTableColumnDate(tableColumnBirthDate, "dd/MM/yyyy");
 		tableColumnBaseSalary.setCellValueFactory(new PropertyValueFactory<>("baseSalary"));
 		Utils.formatTableColumnDouble(tableColumnBaseSalary, 2);
+
 		Stage stage = (Stage) Main.getMainScene().getWindow();
 		tableViewSeller.prefHeightProperty().bind(stage.heightProperty());
 	}
 
 	public void updateTableView() {
 		if (service == null) {
-			throw new IllegalStateException("Service Was Null");
+			throw new IllegalStateException("Service was null");
 		}
 		List<Seller> list = service.findAll();
-		obslist = FXCollections.observableArrayList(list);
-		tableViewSeller.setItems(obslist);
+		obsList = FXCollections.observableArrayList(list);
+		tableViewSeller.setItems(obsList);
 		initEditButtons();
-		initRemoveButtons(); 
+		initRemoveButtons();
 	}
 
 	private void createDialogForm(Seller obj, String absoluteName, Stage parentStage) {
@@ -115,7 +114,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 			SellerFormController controller = loader.getController();
 			controller.setSeller(obj);
 			controller.setSellerService(new SellerService());
-			controller.subscribeDataChangelistener(this);
+			controller.subscribeDataChangeListener(this);
 			controller.updateFormData();
 
 			Stage dialogStage = new Stage();
@@ -130,7 +129,6 @@ public class SellerListController implements Initializable, DataChangeListener {
 		}
 	}
 
-	@Override
 	public void onDataChanged() {
 		updateTableView();
 	}
@@ -173,21 +171,19 @@ public class SellerListController implements Initializable, DataChangeListener {
 	}
 
 	private void removeEntity(Seller obj) {
-		Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Are You sure to delete ?");
-		
+		Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Are you sure to delete?");
+
 		if (result.get() == ButtonType.OK) {
-			if(service == null) {
-				throw new IllegalStateException("Service Was Null");
+			if (service == null) {
+				throw new IllegalStateException("Service was null");
 			}
 			try {
 				service.remove(obj);
 				updateTableView();
-				
-			} catch (DbIntegrityException e) {
-				Alerts.showAlert("Error Remove Object", null, e.getMessage(), AlertType.ERROR);
+			}
+			catch (DbIntegrityException e) {
+				Alerts.showAlert("Error removing object", null, e.getMessage(), AlertType.ERROR);
 			}
 		}
-		
 	}
-
 }
